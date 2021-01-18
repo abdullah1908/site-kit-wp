@@ -26,9 +26,10 @@ import { _x } from '@wordpress/i18n';
  */
 import Data from 'googlesitekit-data';
 import Widgets from 'googlesitekit-widgets';
-import { MODULES_ANALYTICS, FORM_ALL_TRAFFIC_WIDGET } from '../../../datastore/constants';
+import { MODULES_ANALYTICS, FORM_ALL_TRAFFIC_WIDGET, DATE_RANGE_OFFSET } from '../../../datastore/constants';
 import { CORE_FORMS } from '../../../../../googlesitekit/datastore/forms/constants';
 import { CORE_SITE } from '../../../../../googlesitekit/datastore/site/constants';
+import { CORE_USER } from '../../../../../googlesitekit/datastore/user/constants';
 import whenActive from '../../../../../util/when-active';
 import TotalUserCount from './TotalUserCount';
 import UserCountGraph from './UserCountGraph';
@@ -39,11 +40,15 @@ import { Grid, Row, Cell } from '../../../../../material-components/layout';
 import { getURLPath } from '../../../../../util/getURLPath';
 const { Widget } = Widgets.components;
 const { useSelect } = Data;
+import { generateDateRangeArgs } from '../../../util/report-date-range-args';
 
 function DashboardAllTrafficWidget() {
 	const dimensionName = useSelect( ( select ) => select( CORE_FORMS ).getValue( FORM_ALL_TRAFFIC_WIDGET, 'dimensionName' ) || 'ga:channelGrouping' );
 	const dimensionValue = useSelect( ( select ) => select( CORE_FORMS ).getValue( FORM_ALL_TRAFFIC_WIDGET, 'dimensionValue' ) );
 	const entityURL = useSelect( ( select ) => select( CORE_SITE ).getCurrentEntityURL() );
+	const dateRangeDates = useSelect( ( select ) => select( CORE_USER ).getDateRangeDates( {
+		offsetDays: DATE_RANGE_OFFSET,
+	} ) );
 
 	let reportType;
 	switch ( dimensionName ) {
@@ -64,6 +69,7 @@ function DashboardAllTrafficWidget() {
 		reportArgs = {
 			'explorer-table.plotKeys': '[]',
 			'_r.drilldown': `analytics.pagePath:${ getURLPath( entityURL ) }`,
+			...generateDateRangeArgs( dateRangeDates ),
 		};
 	}
 
